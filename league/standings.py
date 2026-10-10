@@ -5,15 +5,30 @@ from collections.abc import Iterable
 from league.models import Match, TeamRecord
 
 
+def create_team_record(team_name: str) -> TeamRecord:
+    return TeamRecord(
+        team=team_name,
+        played=0,
+        won=0,
+        drawn=0,
+        lost=0,
+        goals_for=0,
+        goals_against=0,
+    )
+
 def calculate_standings(matches: Iterable[Match]) -> list[TeamRecord]:
     records: dict[str, TeamRecord] = {}
 
+
     for match in matches:
+ # Get the home team's record, creating one if it doesn't exist.
         home = records.setdefault(
-            match.home_team, TeamRecord(match.home_team, 0, 0, 0, 0, 0, 0)
+            match.home_team, create_team_record(match.home_team)
         )
+ # Get the away team's record, creating one if it doesn't exist.
         away = records.setdefault(
-            match.away_team, TeamRecord(match.away_team, 0, 0, 0, 0, 0, 0)
+            match.away_team, 
+            create_team_record(match.away_team)
         )
 
         home.played += 1
