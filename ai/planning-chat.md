@@ -117,3 +117,50 @@ Codex did not follow the "do not delete" rule. It used `Delete File` on `formatt
 * `cli.py` opens the `-o` output file before parsing, so a bad input line can leave an empty output file.
 * The `OSError` message is the same for read and write failures.
 * The missing-file test only checks that "traceback" is absent from stderr, which is a weak check.
+
+# Session 4: End-to-End Testing
+
+## User request
+
+Request 1:
+
+Read AGENTS.md. Add one end-to-end test. Only create tests/test_end_to_end.py. Do not change any other file and do not delete or rename anything.
+
+The test runs league.cli.main on data/input_1974_75_week10.csv with -o pointing at a file in tmp_path, then asserts the output file's text equals the text of tests/expected_week10.csv exactly. Locate both files relative to the test file with pathlib, not the current directory.
+
+Add a second test on the same output asserting these totals: played 22, won 10, drawn 2, lost 10, goals for 31, goals against 31, points 22. Add a one-line comment above each explaining why the number must be true.
+
+Run python -m pytest and show the result.
+
+Request 2 (follow-up):
+
+find the extra tests in test_end_to_end.py and flag it to be removed
+
+## AI response and implementation summary
+
+**Request 1.** Codex read AGENTS.md, the CLI, the formatter, the existing CLI tests and the expected output, then created `tests/test_end_to_end.py` with two tests. Both locate their files with `Path(__file__)`. The first runs `main` on `data/input_1974_75_week10.csv` with `-o` in `tmp_path` and compares the output text to the expected CSV. The second reads the output with `csv.DictReader` and asserts the seven totals, each with a one-line comment above it.
+
+The expected CSV is not at `tests/expected_week10.csv`. It is at `tests/tests/expected_week10.csv`, and Codex pointed the test at that nested path and said so.
+
+The first pytest run had 2 failures. The totals test failed because Codex had halved the played, won, drawn and lost sums, but the table already sums to the requested numbers (22 teams, one game each). Codex removed the halving and rewrote those four comments. The exact-text test kept failing: the CLI output ends with a newline and the expected CSV does not. Codex left the fixture unchanged because only one file was allowed, and it reported the failure openly.
+
+Result: `python -m pytest` gave **27 passed, 1 failed** (28 tests: 26 existing, 2 new).
+
+**Request 2.** Codex read `tests/test_end_to_end.py` and decided the extra test was `test_matchweek_10_totals`, reasoning that its totals are already covered by the expected-output check. It flagged the test by adding one comment line directly above it:
+
+`# TODO: Remove this extra test; its totals are covered by the expected-output check.`
+
+Codex edited the file with a small Python string replacement and left the test itself in place, which fits "flag it" and not "remove it". It flagged one test although the request said "tests", and it did not ask which tests I meant. It did not rerun pytest after the edit.
+
+## Files changed
+
+* `tests/test_end_to_end.py`: created with 2 tests, then one TODO comment line added above `test_matchweek_10_totals`. No other file was touched, and nothing was deleted or renamed.
+
+## Open issues
+
+* `test_matchweek_10_output_matches_expected_file` fails because of one byte: the fixture has no final newline and the CLI output does. Since the CSV writer ends every row with "\n", the fixture is the likely thing to fix, which needs my decision because the fixture was off limits.
+* Codex's reason for flagging the totals test does not hold right now. The expected-output test is failing, so it covers nothing at the moment. If the totals test is removed, no passing end-to-end check is left.
+* The fixture sits at `tests/tests/expected_week10.csv`, not `tests/expected_week10.csv` as the request said. The test uses the nested path, so moving the file means updating the test.
+* The comment above the played assertion says "22 clubs in its 22 matches". That is wrong. 22 clubs with one game each means 11 matches, and the 22 is the number of team appearances. The "22 match results" wording in the won, drawn and lost comments should say team results. These comments go away if the totals test is removed.
+* The TODO is a flag only. The totals test still runs, and a later step has to delete it.
+* Pytest was not rerun after the TODO edit. The last known result is 27 passed, 1 failed.
