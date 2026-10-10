@@ -323,7 +323,6 @@ The brief expects an AI coding assistant to be used and asks for artifacts of th
  
 - **Codex** wrote the parser, the standings engine, the formatter, the command-line interface and the tests, working from prompts that spelled out the rules and the files it was allowed to change. I reviewed and ran everything it produced.
 - **I wrote** the ranking sort key and the `goal_average` logic myself, and the code comments throughout.
-- **A separate AI chat assistant (Claude)** was used for planning and research: interpreting the brief, researching the 1974/75 rules and data sources, deciding the design, and drafting the prompts. That conversation is included as `ai/planning-chat.md`.
 **Working method.** Each piece was built in a small step with its own tests, and Codex was told which files it could touch and not to delete or rename anything. After each step I ran the tests myself instead of relying on the AI's report.
  
 **The raw logs are unedited on purpose.** `TIMELINE.md` is a derived summary that can be rebuilt at any time:
